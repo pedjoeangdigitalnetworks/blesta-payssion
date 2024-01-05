@@ -1,0 +1,21 @@
+{
+    "name": "pedjoeangdigitalnetworks/payssion",
+    "description": "Accept local payment from around the world with Payssion.",
+    "license": "proprietary",
+    "type": "blesta-gateway-nonmerchant",
+    "require": {
+        "blesta/composer-installer": "~1.0"
+    },
+    "authors": [
+        {
+            "name": "Pedjoeang Digital Networks",
+            "homepage": "http://pedjoeangdigital.net"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "blesta/composer-installer": true
+        }
+    }
+}

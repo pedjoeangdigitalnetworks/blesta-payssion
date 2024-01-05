@@ -1,0 +1,13 @@
+{
+	"version": "1.0.0",
+	"name": "Payssion.name",
+	"description": "Payssion.description",
+	"authors": [
+        {
+            "name": "Pedjoeang Digital Networks",
+            "url": "http://pedjoeangdigital.net"
+        }
+    ],
+	"currencies": ["USD"],
+	"signup_url": "https://payssion.com/register"
+}
