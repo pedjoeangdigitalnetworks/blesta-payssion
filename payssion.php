@@ -196,8 +196,9 @@ class Payssion extends NonmerchantGateway
             'return_url' => ($options['return_url']  . "&invoice_id=" . ($invoice_amounts[0]->id ?? null) ?? null),
             'currency' => 'USD',
             'api_key' => $this->meta['api_key'],
+            'pm_id' => isset($_POST['payment_method']) ? $_POST['payment_method'] : null,
             // 'api_key', 'pm_id', 'amount', 'currency', 'order_id', 'secret_key'
-            'api_sig' => isset($_POST['pm_id']) ? $this->getSig(['api_key' => $this->meta['api_key'], 'pm_id' => $_POST['pm_id'], 'amount' => $amount, 'currency' => 'USD', 'order_id' => $orderId], $this->meta['api_secret']) : null,
+            'api_sig' => isset($_POST['payment_method']) ? $this->getSig(['api_key' => $this->meta['api_key'], 'pm_id' => $_POST['payment_method'], 'amount' => $amount, 'currency' => 'USD', 'order_id' => $orderId], $this->meta['api_secret']) : null,
             // 3% from total amount
         ];
 
@@ -217,7 +218,7 @@ class Payssion extends NonmerchantGateway
         // }
         // Set view
         $this->view = $this->makeView('process', 'default', str_replace(ROOTWEBDIR, '', dirname(__FILE__) . DS));
-        $this->view->set('post_to', isset($_POST['pm_id']) && $params['api_sig'] != null ? $this->payssionUrl : null);
+        $this->view->set('post_to', isset($_POST['payment_method']) && $params['api_sig'] != null ? $this->payssionUrl : null);
 
         $payment_options = [
             'qris_id' => Language::_('Payssion.payment_method.qris_id', true),
