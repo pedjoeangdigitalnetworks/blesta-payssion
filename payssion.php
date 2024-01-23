@@ -21,6 +21,8 @@ class Payssion extends NonmerchantGateway
      */
     private $meta;
 
+    private $payssionUrl;
+
     /**
      * Construct a new merchant gateway
      */
@@ -141,6 +143,19 @@ class Payssion extends NonmerchantGateway
         $this->currency = $currency;
     }
 
+    private function getSig($params, $secret_key)
+    {
+        $msg_array = array();
+    	foreach ($params as $key) {
+    		$msg_array[$key] = isset($params[$key]) ? $params[$key] : '';
+    	}
+    	$msg_array['secret_key'] = $secret_key;
+    	file_put_contents('/var/log/Payssion_blesta_create.log', json_encode($msg_array) . PHP_EOL, FILE_APPEND);
+    	$msg = implode('|', $msg_array);
+    	$sig = md5($msg);
+        return $sig;
+    }
+
     /**
      * Returns all HTML markup required to render an authorization and capture payment form
      *
@@ -149,6 +164,9 @@ class Payssion extends NonmerchantGateway
      */
     public function buildProcess(array $contact_info, $amount, array $invoice_amounts = null, array $options = null)
     {
+        if (isset($_POST['pm_id'])) {
+            file_put_contents('/var/log/Payssion_blesta_create.log', 'Payment Method ID : ' . $_POST['pm_id'] . PHP_EOL, FILE_APPEND);
+        }
         // Force 2-decimal places only
         $amount = round($amount, 2);
         if (isset($options['recur']['amount'])) {
@@ -158,23 +176,28 @@ class Payssion extends NonmerchantGateway
         // Initialize API
         if ($this->meta['mode'] == 'sandbox') {
             $client = new PayssionClient($this->meta['api_key'], $this->meta['api_secret'], false);
+            $this->payssionUrl = 'https://sandbox.payssion.com/payment/create.html';
         } else {
             $client = new PayssionClient($this->meta['api_key'], $this->meta['api_secret']);
+            $this->payssionUrl = 'https://www.payssion.com/payment/create.html';
         }
         Loader::loadModels($this, ['Contacts']);
         $contact_numbers = $this->Contacts->getNumbers($contact_info['id'], 'phone');
         $customer_info = $this->Contacts->get($contact_info['id']);
         // Set invoice parameters
         $fees = (3/100) * $amount;
+        $orderId = base64_encode($this->serializeInvoices($invoice_amounts));
         $params = [
-            'order_id' => base64_encode($this->serializeInvoices($invoice_amounts)),
+            'order_id' => $orderId,
             'amount' => $amount,
             'payer_name' => ($contact_info['first_name'] ?? null) . ' ' . ($contact_info['last_name'] ?? null),
             'payer_email' => ($customer_info->email ?? null),
             'description' => $invoice_amounts[0]->id != null ? 'Payment for invoice #' . ($invoice_amounts[0]->id) : 'Payment for invoice',
             'return_url' => ($options['return_url']  . "&invoice_id=" . ($invoice_amounts[0]->id ?? null) ?? null),
             'currency' => 'USD',
-            'pm_id' => $this->meta['payment_method']
+            'api_key' => $this->meta['api_key'],
+            // 'api_key', 'pm_id', 'amount', 'currency', 'order_id', 'secret_key'
+            'api_sig' => isset($_POST['pm_id']) ? $this->getSig(['api_key' => $this->meta['api_key'], 'pm_id' => $_POST['pm_id'], 'amount' => $amount, 'currency' => 'USD', 'order_id' => $orderId], $this->meta['api_secret']) : null,
             // 3% from total amount
         ];
 
@@ -186,15 +209,35 @@ class Payssion extends NonmerchantGateway
         . ($contact_info['client_id'] ?? null);
 
         // Create invoice
-        try {
-            $invoice = $client->create($params);
-            $this->log('buildProcess', json_encode($invoice), 'output', $invoice['result_code'] == 200);
-        } catch (Exception $e) {
-            $this->Input->setErrors(['invalid' => ['response' => $e->getMessage()]]);
-        }
+        // try {
+        //     $invoice = $client->create($params);
+        //     $this->log('buildProcess', json_encode($invoice), 'output', $invoice['result_code'] == 200);
+        // } catch (Exception $e) {
+        //     $this->Input->setErrors(['invalid' => ['response' => $e->getMessage()]]);
+        // }
         // Set view
         $this->view = $this->makeView('process', 'default', str_replace(ROOTWEBDIR, '', dirname(__FILE__) . DS));
-        $this->view->set('post_to', $invoice['redirect_url'] ?? null);
+        $this->view->set('post_to', isset($_POST['pm_id']) && $params['api_sig'] != null ? $this->payssionUrl : null);
+
+        $payment_options = [
+            'qris_id' => Language::_('Payssion.payment_method.qris_id', true),
+            'atm_id' => Language::_('Payssion.payment_method.atm_id', true),
+            'dana_id' => Language::_('Payssion.payment_method.dana_id', true),
+            'ovo_id' => Language::_('Payssion.payment_method.ovo_id', true),
+            'enets_sg' => Language::_('Payssion.payment_method.enets_sg', true),
+            'paynow_sg' => Language::_('Payssion.payment_method.paynow_sg', true),
+            'alipay_cn' => Language::_('Payssion.payment_method.alipay_cn', true),
+            'upi_in' => Language::_('Payssion.payment_method.upi_in', true),
+            'paytm_in' => Language::_('Payssion.payment_method.paytm_in', true),
+            'bankcard_tr' => Language::_('Payssion.payment_method.bankcard_tr', true),
+            'gcash_ph' => Language::_('Payssion.payment_method.gcash_ph', true),
+            'grabpay_ph' => Language::_('Payssion.payment_method.grabpay_ph', true),
+            'kakaopay_kr' => Language::_('Payssion.payment_method.kakaopay_kr', true),
+            'creditcard_kr' => Language::_('Payssion.payment_method.creditcard_kr', true),
+        ];
+
+        $this->view->set('payment_options', $payment_options);
+        $this->view->set('fields', $params);
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);

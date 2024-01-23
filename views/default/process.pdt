@@ -1,9 +1,23 @@
-<div id="payment">
-    <button class="btn btn-primary" onclick="redirectNow();">Pay Now</button>
-</div>
+<?php
+$this->Form->setCsrfOptions(['set_on_create' => true]);
+$this->Form->create(($post_to ?? null));
 
-<script>
-    function redirectNow() {
-        window.location.href = '<?php echo $this->Html->safe($post_to ?? ''); ?>';
+if ((isset($fields) ? $fields : null)) {
+    foreach ($fields as $key => $value) {
+        if (is_array($value)) {
+            foreach ($value as $sub_key => $sub_value) {
+                $this->Form->fieldHidden($key . '[' . $sub_key . ']', $sub_value);
+            }
+        } else {
+            $this->Form->fieldHidden($key, $value);
+        }
     }
-</script>
+}
+
+
+$this->Form->label($this->_('Payssion.payment_method', true), 'pm_id');
+$this->Form->fieldSelect('pm_id', ($payment_options ?? []), ($meta['payment_method'] ?? null), ['id'=>'pm_id']);
+
+$this->Form->fieldSubmit('submit', $this->_('Payssion.buildprocess.submit', true), ['class' => 'btn btn-info float-right']);
+
+$this->Form->end();
