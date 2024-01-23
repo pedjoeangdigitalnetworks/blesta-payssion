@@ -34,5 +34,6 @@ $lang['Payssion.payment_method.gcash_ph'] = 'GCash (PH)';
 $lang['Payssion.payment_method.grabpay_ph'] = 'GrabPay (PH)';
 $lang['Payssion.payment_method.kakaopay_kr'] = 'KakaoPay (KR)';
 $lang['Payssion.payment_method.creditcard_kr'] = 'Credit Card (KR)';
+$lang['Payssion.payment_method.grabpay_my'] = 'Grab Pay (MY)';
 
 $lang['Payssion.buildprocess.submit'] = 'Pay with Payssion';

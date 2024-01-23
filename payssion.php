@@ -71,25 +71,6 @@ class Payssion extends NonmerchantGateway
         ];
         $this->view->set('select_options', $select_options);
 
-        $payment_otpions = [
-            'qris_id' => Language::_('Payssion.payment_method.qris_id', true),
-            'atm_id' => Language::_('Payssion.payment_method.atm_id', true),
-            'dana_id' => Language::_('Payssion.payment_method.dana_id', true),
-            'ovo_id' => Language::_('Payssion.payment_method.ovo_id', true),
-            'enets_sg' => Language::_('Payssion.payment_method.enets_sg', true),
-            'paynow_sg' => Language::_('Payssion.payment_method.paynow_sg', true),
-            'alipay_cn' => Language::_('Payssion.payment_method.alipay_cn', true),
-            'upi_in' => Language::_('Payssion.payment_method.upi_in', true),
-            'paytm_in' => Language::_('Payssion.payment_method.paytm_in', true),
-            'bankcard_tr' => Language::_('Payssion.payment_method.bankcard_tr', true),
-            'gcash_ph' => Language::_('Payssion.payment_method.gcash_ph', true),
-            'grabpay_ph' => Language::_('Payssion.payment_method.grabpay_ph', true),
-            'kakaopay_kr' => Language::_('Payssion.payment_method.kakaopay_kr', true),
-            'creditcard_kr' => Language::_('Payssion.payment_method.creditcard_kr', true),
-        ];
-
-        $this->view->set('payment_options', $payment_otpions);
-
         return $this->view->fetch();
     }
 
@@ -164,39 +145,6 @@ class Payssion extends NonmerchantGateway
      * Returns all HTML markup required to render an authorization and capture payment form
      *
      * @param array $contact_info An array of contact info including:
-     *  - id The contact ID
-     *  - client_id The ID of the client this contact belongs to
-     *  - user_id The user ID this contact belongs to (if any)
-     *  - contact_type The type of contact
-     *  - contact_type_id The ID of the contact type
-     *  - first_name The first name on the contact
-     *  - last_name The last name on the contact
-     *  - title The title of the contact
-     *  - company The company name of the contact
-     *  - address1 The address 1 line of the contact
-     *  - address2 The address 2 line of the contact
-     *  - city The city of the contact
-     *  - state An array of state info including:
-     *      - code The 2 or 3-character state code
-     *      - name The local name of the country
-     *  - country An array of country info including:
-     *      - alpha2 The 2-character country code
-     *      - alpha3 The 3-cahracter country code
-     *      - name The english name of the country
-     *      - alt_name The local name of the country
-     *  - zip The zip/postal code of the contact
-     * @param float $amount The amount to charge this contact
-     * @param array $invoice_amounts An array of invoices, each containing:
-     *  - id The ID of the invoice being processed
-     *  - amount The amount being processed for this invoice (which is included in $amount)
-     * @param array $options An array of options including:
-     *  - description The Description of the charge
-     *  - return_url The URL to redirect users to after a successful payment
-     *  - recur An array of recurring info including:
-     *      - amount The amount to recur
-     *      - term The term to recur
-     *      - period The recurring period (day, week, month, year, onetime) used in conjunction
-     *          with term in order to determine the next recurring payment
      * @return string HTML markup required to render an authorization and capture payment form
      */
     public function buildProcess(array $contact_info, $amount, array $invoice_amounts = null, array $options = null)
@@ -226,44 +174,27 @@ class Payssion extends NonmerchantGateway
             'description' => $invoice_amounts[0]->id != null ? 'Payment for invoice #' . ($invoice_amounts[0]->id) : 'Payment for invoice',
             'return_url' => ($options['return_url']  . "&invoice_id=" . ($invoice_amounts[0]->id ?? null) ?? null),
             'currency' => 'USD',
-            'pm_id' =>  $this->meta['payment_method']
+            'pm_id' => $this->meta['payment_method']
             // 3% from total amount
         ];
+
+        $this->log('buildProcess', json_encode($params), 'input', true);
+    
 
         $callbackUrl = Configure::get('Blesta.gw_callback_url')
         . Configure::get('Blesta.company_id') . '/payssion/?client_id='
         . ($contact_info['client_id'] ?? null);
 
-        file_put_contents('/var/log/Payssion_blesta_create.log', $callbackUrl . PHP_EOL, FILE_APPEND);
         // Create invoice
         try {
             $invoice = $client->create($params);
+            $this->log('buildProcess', json_encode($invoice), 'output', $invoice['result_code'] == 200);
         } catch (Exception $e) {
             $this->Input->setErrors(['invalid' => ['response' => $e->getMessage()]]);
         }
         // Set view
         $this->view = $this->makeView('process', 'default', str_replace(ROOTWEBDIR, '', dirname(__FILE__) . DS));
-        $payment_otpions = [
-            'qris_id' => Language::_('Payssion.payment_method.qris_id', true),
-            'atm_id' => Language::_('Payssion.payment_method.atm_id', true),
-            'dana_id' => Language::_('Payssion.payment_method.dana_id', true),
-            'ovo_id' => Language::_('Payssion.payment_method.ovo_id', true),
-            'enets_sg' => Language::_('Payssion.payment_method.enets_sg', true),
-            'paynow_sg' => Language::_('Payssion.payment_method.paynow_sg', true),
-            'alipay_cn' => Language::_('Payssion.payment_method.alipay_cn', true),
-            'upi_in' => Language::_('Payssion.payment_method.upi_in', true),
-            'paytm_in' => Language::_('Payssion.payment_method.paytm_in', true),
-            'bankcard_tr' => Language::_('Payssion.payment_method.bankcard_tr', true),
-            'gcash_ph' => Language::_('Payssion.payment_method.gcash_ph', true),
-            'grabpay_ph' => Language::_('Payssion.payment_method.grabpay_ph', true),
-            'kakaopay_kr' => Language::_('Payssion.payment_method.kakaopay_kr', true),
-            'creditcard_kr' => Language::_('Payssion.payment_method.creditcard_kr', true),
-        ];
-        $meta = array();
-        $meta['payment_method'] = $this->meta['payment_method'];
-        $this->view->set('meta', $meta);
-        $this->view->set('payment_options', $payment_otpions);
-        $this->view->set('post_to', $invoice["redirect_url"] ?? null);
+        $this->view->set('post_to', $invoice['redirect_url'] ?? null);
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
@@ -415,7 +346,7 @@ class Payssion extends NonmerchantGateway
         // Get transaction
         try {
             $order_id = $get['order_id'];
-            $transaction = $client->getDetails($order_id);
+            $transaction = $client->getDetails(['order_id' => $order_id]);
             file_put_contents('/var/log/Payssion_blesta_return.log', json_encode($transaction) . PHP_EOL, FILE_APPEND);
         } catch (Exception $e) {
             file_put_contents('/var/log/Payssion_blesta_error.log', $e->getMessage() . PHP_EOL, FILE_APPEND);
