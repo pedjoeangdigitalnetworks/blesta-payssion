@@ -146,11 +146,10 @@ class Payssion extends NonmerchantGateway
     private function getSig($params, $secret_key)
     {
         $msg_array = array();
-    	foreach ($params as $key) {
-    		$msg_array[$key] = isset($params[$key]) ? $params[$key] : '';
+    	foreach ($params as $key => $value) {
+    		$msg_array[$key] = $value;
     	}
     	$msg_array['secret_key'] = $secret_key;
-    	file_put_contents('/var/log/Payssion_blesta_create.log', json_encode($msg_array) . PHP_EOL, FILE_APPEND);
     	$msg = implode('|', $msg_array);
     	$sig = md5($msg);
         return $sig;
@@ -197,7 +196,6 @@ class Payssion extends NonmerchantGateway
             'currency' => 'USD',
             'api_key' => $this->meta['api_key'],
             'pm_id' => isset($_POST['payment_method']) ? $_POST['payment_method'] : null,
-            // 'api_key', 'pm_id', 'amount', 'currency', 'order_id', 'secret_key'
             'api_sig' => isset($_POST['payment_method']) ? $this->getSig(['api_key' => $this->meta['api_key'], 'pm_id' => $_POST['payment_method'], 'amount' => $amount, 'currency' => 'USD', 'order_id' => $orderId], $this->meta['api_secret']) : null,
             // 3% from total amount
         ];

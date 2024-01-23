@@ -14,14 +14,14 @@ if ((isset($fields) ? $fields : null)) {
     }
 }
 
+$this->Form->label($this->_('Payssion.payment_method', true), 'payment_method');
+$this->Form->fieldSelect('payment_method', ($payment_options ?? []), ($meta['payment_method'] ?? null), ['id'=>'payment_method']);
 
-if(isset($payment_options)) {
-    $this->Form->label($this->_('Payssion.payment_method', true), 'payment_method');
-    $this->Form->fieldSelect('payment_method', ($payment_options ?? []), ($meta['payment_method'] ?? null), ['id'=>'payment_method']);
-    <div class="pad">
-        <p>Notes : Please choose payment method, then click Pay with Payssion after page refresh click Pay with Payssion again.</p>
-    </div>
-}
 $this->Form->fieldSubmit('submit', $this->_('Payssion.buildprocess.submit', true), ['class' => 'btn btn-info float-right']);
 
 $this->Form->end();
+
+?>
+<div class="pad">
+    <p>Notes : Please choose payment method, then click Pay with Payssion after page refresh click Pay with Payssion again.</p>
+</div>
