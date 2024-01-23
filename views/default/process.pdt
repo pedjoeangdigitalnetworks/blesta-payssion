@@ -14,9 +14,10 @@ if ((isset($fields) ? $fields : null)) {
     }
 }
 
-$this->Form->label($this->_('Payssion.payment_method', true), 'payment_method');
-$this->Form->fieldSelect('payment_method', ($payment_options ?? []), ($meta['payment_method'] ?? null), ['id'=>'payment_method']);
-
+if ($fields['pm_id'] == null) {
+    $this->Form->label($this->_('Payssion.payment_method', true), 'payment_method');
+    $this->Form->fieldSelect('payment_method', ($payment_options ?? []), ($meta['payment_method'] ?? null), ['id'=>'payment_method']);
+}
 $this->Form->fieldSubmit('submit', $this->_('Payssion.buildprocess.submit', true), ['class' => 'btn btn-info float-right']);
 
 $this->Form->end();

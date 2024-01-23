@@ -1,6 +1,6 @@
 <?php
 // Basics
-$lang['Payssion.name'] = 'Payssion';
+$lang['Payssion.name'] = 'Payssion (QRIS, OVO, GrabPay (MY & PH) and more)';
 $lang['Payssion.description'] = 'Accept any local payments via Payssion.';
 
 
