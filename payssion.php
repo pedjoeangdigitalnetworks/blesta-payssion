@@ -233,6 +233,7 @@ class Payssion extends NonmerchantGateway
             'grabpay_ph' => Language::_('Payssion.payment_method.grabpay_ph', true),
             'kakaopay_kr' => Language::_('Payssion.payment_method.kakaopay_kr', true),
             'creditcard_kr' => Language::_('Payssion.payment_method.creditcard_kr', true),
+            'grabpay_my' => Language::_('Payssion.payment_method.grabpay_my', true),
         ];
 
         $this->view->set('payment_options', $payment_options);
