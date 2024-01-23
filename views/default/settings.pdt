@@ -17,11 +17,4 @@
             $this->Form->fieldSelect('mode', ($select_options ?? []), ($meta['mode'] ?? null), ['id'=>'mode']);
         ?>
     </li>
-    <li>
-        <?php
-            $this->Form->label($this->_('Payssion.payment_method', true), 'payment_method');
-            $this->Form->fieldSelect('payment_method', ($payment_options ?? []), ($meta['payment_method'] ?? null), ['id'=>'payment_method']);
-        ?>
-    </li>
-      
 </ul>

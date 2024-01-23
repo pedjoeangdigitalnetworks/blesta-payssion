@@ -59,7 +59,7 @@ class Payssion extends NonmerchantGateway
     {
         // Load the view into this object, so helpers can be automatically add to the view
         $this->view = new View('settings', 'default');
-        $this->view->setDefaultView('components' . DS . 'gateways' . DS . 'nonmerchant' . DS . 'Payssion' . DS);
+        $this->view->setDefaultView('components' . DS . 'gateways' . DS . 'nonmerchant' . DS . 'payssion' . DS);
 
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html']);
@@ -243,6 +243,26 @@ class Payssion extends NonmerchantGateway
         }
         // Set view
         $this->view = $this->makeView('process', 'default', str_replace(ROOTWEBDIR, '', dirname(__FILE__) . DS));
+        $payment_otpions = [
+            'qris_id' => Language::_('Payssion.payment_method.qris_id', true),
+            'atm_id' => Language::_('Payssion.payment_method.atm_id', true),
+            'dana_id' => Language::_('Payssion.payment_method.dana_id', true),
+            'ovo_id' => Language::_('Payssion.payment_method.ovo_id', true),
+            'enets_sg' => Language::_('Payssion.payment_method.enets_sg', true),
+            'paynow_sg' => Language::_('Payssion.payment_method.paynow_sg', true),
+            'alipay_cn' => Language::_('Payssion.payment_method.alipay_cn', true),
+            'upi_in' => Language::_('Payssion.payment_method.upi_in', true),
+            'paytm_in' => Language::_('Payssion.payment_method.paytm_in', true),
+            'bankcard_tr' => Language::_('Payssion.payment_method.bankcard_tr', true),
+            'gcash_ph' => Language::_('Payssion.payment_method.gcash_ph', true),
+            'grabpay_ph' => Language::_('Payssion.payment_method.grabpay_ph', true),
+            'kakaopay_kr' => Language::_('Payssion.payment_method.kakaopay_kr', true),
+            'creditcard_kr' => Language::_('Payssion.payment_method.creditcard_kr', true),
+        ];
+        $meta = array();
+        $meta['payment_method'] = $this->meta['payment_method'];
+        $this->view->set('meta', $meta);
+        $this->view->set('payment_options', $payment_otpions);
         $this->view->set('post_to', $invoice["redirect_url"] ?? null);
 
         // Load the helpers required for this view
