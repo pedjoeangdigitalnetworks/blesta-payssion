@@ -285,6 +285,7 @@ class Payssion extends NonmerchantGateway
 
         if ($notify_sig != $check_sig) {
             $this->Input->setErrors(['invalid', ['response' => 'Invalid signature']]);
+            return;
         }
 
         $invoice_details = $this->unserializeInvoices(base64_decode($order_id));
@@ -299,12 +300,14 @@ class Payssion extends NonmerchantGateway
         }
         if ($current_invoice_status == 'PAID') {
             $this->Input->setErrors(['invalid', ['response' => 'Invoice already paid']]);
+            return;
         }
 
         $paymentStatus = isset($state) ? $state : null;
         $invoice_id = isset($order_id) ? $order_id : null;
         if (!$invoice_id) {
             $this->Input->setErrors(['invalid', ['response' => 'Invalid invoice id']]);
+            return;
         }
 
         $status = 'error';
@@ -347,6 +350,7 @@ class Payssion extends NonmerchantGateway
 
         if ($gap_amount > 1) {
             $this->Input->setErrors(['invalid', ['response' => 'Invalid amount']]);
+            return;
         } else {
             $paid_amount = $total_amount;
         }
