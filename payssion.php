@@ -261,7 +261,6 @@ class Payssion extends NonmerchantGateway
         // Initialize API
         $php_input = file_get_contents('php://input');
         $json = json_decode($php_input, true);
-        file_put_contents('/var/log/Payssion_blesta.log', $php_input . PHP_EOL, FILE_APPEND);
         
         $pm_id = $json['pm_id'];
         $amount = $json['amount'];
@@ -287,14 +286,15 @@ class Payssion extends NonmerchantGateway
             $this->Input->setErrors(['invalid', ['response' => 'Invalid signature']]);
         }
 
-        $invoice_details = $this->unserializeInvoices(base64_decode($json->merchant_ref));
+        $invoice_details = $this->unserializeInvoices(base64_decode($order_id));
         $invoice_id = count($invoice_details) > 0 ? (int)$invoice_details[0]['id'] : null;
         $current_invoice_status = 'UNPAID';
+        $client_id = null;
         if ($invoice_id) {
             Loader::loadModels($this, ['Invoices', 'Contacts']);
             $data = $this->Invoices->get($invoice_id);
-            file_put_contents('/var/log/Payssion_blesta.log', json_encode($data) . PHP_EOL, FILE_APPEND);
             $current_invoice_status = $data->status == 'active' || $data->status == 'paid' || $data->status == 'approved' ? 'PAID' : 'UNPAID';
+            $client_id = $data != null ? $data->client_id : null;
         }
         if ($current_invoice_status == 'PAID') {
             $this->Input->setErrors(['invalid', ['response' => 'Invoice already paid']]);
@@ -338,7 +338,6 @@ class Payssion extends NonmerchantGateway
         $paid_amount = $paymentStatus == 'completed' ? $total_amount : 0;
         $transaction_id = $this->unserializeInvoices(base64_decode($order_id));
         $transaction_id = count($transaction_id) > 0 ? $transaction_id[0]['id'] : null;
-        file_put_contents('/var/log/Payssion_blesta.log', 'Transaction ID : ' . $transaction_id . PHP_EOL, FILE_APPEND);
         $params = [
             'client_id' => ($client_id ?? null),
             'amount' => ($paid_amount ?? null),
