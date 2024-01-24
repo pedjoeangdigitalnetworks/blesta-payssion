@@ -207,14 +207,6 @@ class Payssion extends NonmerchantGateway
         . Configure::get('Blesta.company_id') . '/payssion/?client_id='
         . ($contact_info['client_id'] ?? null);
 
-        // Create invoice
-        // try {
-        //     $invoice = $client->create($params);
-        //     $this->log('buildProcess', json_encode($invoice), 'output', $invoice['result_code'] == 200);
-        // } catch (Exception $e) {
-        //     $this->Input->setErrors(['invalid' => ['response' => $e->getMessage()]]);
-        // }
-        // Set view
         $this->view = $this->makeView('process', 'default', str_replace(ROOTWEBDIR, '', dirname(__FILE__) . DS));
         $this->view->set('post_to', isset($_POST['payment_method']) && $params['api_sig'] != null ? $this->payssionUrl : null);
 
@@ -353,8 +345,8 @@ class Payssion extends NonmerchantGateway
             'currency' => 'USD',
             'invoices' => $this->unserializeInvoices(base64_decode($order_id)),
             'status' => $status,
-            'reference_id' => ($transaction_id ?? null),
-            'transaction_id' => ($json['transaction_id'] ?? null),
+            'reference_id' => ($json['transaction_id'] ?? null),
+            'transaction_id' => ($transaction_id ?? null),
             'parent_transaction_id' => null
         ];
         file_put_contents('/var/log/Payssion_blesta.log', json_encode($params) . PHP_EOL, FILE_APPEND);
@@ -433,6 +425,8 @@ class Payssion extends NonmerchantGateway
             'transaction_id' => ($get['transaction_id'] ?? null),
             'parent_transaction_id' => null
         ];
+
+        file_put_contents('/var/log/Payssion_blesta.log', "RETURN <br/>" . json_encode($params) . PHP_EOL, FILE_APPEND);
 
         return $params;
     }
