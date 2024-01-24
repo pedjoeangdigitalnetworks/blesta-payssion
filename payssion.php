@@ -294,7 +294,7 @@ class Payssion extends NonmerchantGateway
         if ($invoice_id) {
             Loader::loadModels($this, ['Invoices', 'Contacts']);
             $data = $this->Invoices->get($invoice_id);
-            $current_invoice_status = $data->status == 'active' || $data->status == 'paid' || $data->status == 'approved' ? 'PAID' : 'UNPAID';
+            $current_invoice_status = $data->status == 'active' || $data->status == 'paid' || $data->status == 'approved' || intval($data->due) == 0 ? 'PAID' : 'UNPAID';
             $client_id = $data != null ? $data->client_id : null;
         }
         if ($current_invoice_status == 'PAID') {
@@ -338,7 +338,7 @@ class Payssion extends NonmerchantGateway
         $total_amount = 0;
         $invoices = $this->unserializeInvoices(base64_decode($order_id));
         foreach ($invoices as $invoice) {
-            $total_amount += (int)$invoice['amount'];
+            $total_amount += doubleval($invoice['amount']);
         }
         $gap_amount = 0;
         if ($paid_amount != $total_amount) {
