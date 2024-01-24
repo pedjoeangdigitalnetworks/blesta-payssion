@@ -314,6 +314,9 @@ class Payssion extends NonmerchantGateway
                 case 'completed':
                     $status = 'approved';
                     break;
+                case 'paid_partial':
+                    $status = 'approved';
+                    break;
                 case 'failed':
                     $status = 'declined';
                     break;
@@ -394,6 +397,9 @@ class Payssion extends NonmerchantGateway
         if (isset($paymentStatus)) {
             switch ($paymentStatus) {
                 case 'completed':
+                    $status = 'approved';
+                    break;
+                case 'paid_partial':
                     $status = 'approved';
                     break;
                 case 'failed':
