@@ -344,8 +344,8 @@ class Payssion extends NonmerchantGateway
             'currency' => 'USD',
             'invoices' => $this->unserializeInvoices(base64_decode($order_id)),
             'status' => $status,
-            'reference_id' => ($json['transaction_id'] ?? null),
-            'transaction_id' => ($transaction_id ?? null),
+            'reference_id' => ($transaction_id?? null),
+            'transaction_id' => ($json['transaction_id']  ?? null),
             'parent_transaction_id' => null
         ];
         file_put_contents('/var/log/Payssion_blesta.log', json_encode($params) . PHP_EOL, FILE_APPEND);
