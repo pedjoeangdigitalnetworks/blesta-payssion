@@ -312,7 +312,6 @@ class Payssion extends NonmerchantGateway
 
         $status = 'error';
         $success = false;
-        file_put_contents('/var/log/Payssion_blesta.log', $paymentStatus . PHP_EOL, FILE_APPEND);
         if (isset($paymentStatus)) {
             $success = true;
             switch ($paymentStatus) {
@@ -367,7 +366,6 @@ class Payssion extends NonmerchantGateway
             'transaction_id' => ($json['transaction_id']  ?? null),
             'parent_transaction_id' => null
         ];
-        file_put_contents('/var/log/Payssion_blesta.log', json_encode($params) . PHP_EOL, FILE_APPEND);
         return $params;
     }
 
