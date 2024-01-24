@@ -267,6 +267,7 @@ class Payssion extends NonmerchantGateway
         $currency = $json['currency'];
         $order_id = $json['order_id'];
         $state = $json['state'];
+        $paid_amount = $json['paid'];
 
         $check_array = array(
                 $api_key,
@@ -308,6 +309,7 @@ class Payssion extends NonmerchantGateway
 
         $status = 'error';
         $success = false;
+        file_put_contents('/var/log/Payssion_blesta.log', $paymentStatus . PHP_EOL, FILE_APPEND);
         if (isset($paymentStatus)) {
             $success = true;
             switch ($paymentStatus) {
@@ -338,7 +340,17 @@ class Payssion extends NonmerchantGateway
         foreach ($invoices as $invoice) {
             $total_amount += (int)$invoice['amount'];
         }
-        $paid_amount = $paymentStatus == 'completed' ? $total_amount : 0;
+        $gap_amount = 0;
+        if ($paid_amount != $total_amount) {
+            $gap_amount = abs($total_amount - $paid_amount);
+        }
+
+        if ($gap_amount > 1) {
+            $this->Input->setErrors(['invalid', ['response' => 'Invalid amount']]);
+        } else {
+            $paid_amount = $total_amount;
+        }
+        $paid_amount = $paymentStatus == 'completed' || $paymentStatus == 'paid_partial' ? $total_amount : 0;
         $transaction_id = $this->unserializeInvoices(base64_decode($order_id));
         $transaction_id = count($transaction_id) > 0 ? $transaction_id[0]['id'] : null;
         $params = [
